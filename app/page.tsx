@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 
 const TARGET_DATE_40_DAYS = new Date(Date.now() + 40 * 24 * 60 * 60 * 1000); // 40 days from now
