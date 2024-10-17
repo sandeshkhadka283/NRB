@@ -38,7 +38,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const getTimeParts = (date) => {
+  const getTimeParts = (date: Date) => { // Specify the type for 'date'
     const totalSeconds = Math.floor((date.getTime() - new Date().getTime()) / 1000);
     const days = Math.floor(totalSeconds / (3600 * 24));
     const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
