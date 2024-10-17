@@ -1,101 +1,116 @@
+"use client";
+
 import Image from "next/image";
+import { useEffect, useState } from "react";
+
+const TARGET_DATE_40_DAYS = new Date(Date.now() + 40 * 24 * 60 * 60 * 1000); // 40 days from now
+const TARGET_DATE_END_OF_MONTH = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59); // End of current month
+const TARGET_DATE_END_OF_YEAR = new Date(new Date().getFullYear(), 11, 31, 23, 59, 59); // End of 2024
+
+const getDaysUntilEndOfWeek = () => {
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
+  
+  // Calculate days until the end of the week (Saturday)
+  const daysUntilEndOfWeek = dayOfWeek === 6 ? 0 : 6 - dayOfWeek; // For Sunday start
+  return new Date(today.getFullYear(), today.getMonth(), today.getDate() + daysUntilEndOfWeek, 23, 59, 59);
+};
+
+const TARGET_DATE_WEEKLY = getDaysUntilEndOfWeek();
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [timeLeft, setTimeLeft] = useState({
+    timer40Days: TARGET_DATE_40_DAYS,
+    timerEndOfMonth: TARGET_DATE_END_OF_MONTH,
+    timerWeekly: TARGET_DATE_WEEKLY,
+    timerEndOfYear: TARGET_DATE_END_OF_YEAR,
+  });
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => ({
+        timer40Days: prev.timer40Days <= new Date() ? new Date() : new Date(prev.timer40Days.getTime() - 1000),
+        timerEndOfMonth: prev.timerEndOfMonth <= new Date() ? new Date() : new Date(prev.timerEndOfMonth.getTime() - 1000),
+        timerWeekly: prev.timerWeekly <= new Date() ? new Date() : new Date(prev.timerWeekly.getTime() - 1000),
+        timerEndOfYear: prev.timerEndOfYear <= new Date() ? new Date() : new Date(prev.timerEndOfYear.getTime() - 1000),
+      }));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const getTimeParts = (date) => {
+    const totalSeconds = Math.floor((date.getTime() - new Date().getTime()) / 1000);
+    const days = Math.floor(totalSeconds / (3600 * 24));
+    const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return { days, hours, minutes, seconds };
+  };
+
+  const { days: days40, hours: hours40, minutes: minutes40, seconds: seconds40 } = getTimeParts(timeLeft.timer40Days);
+  const { days: daysEndOfMonth, hours: hoursEndOfMonth, minutes: minutesEndOfMonth, seconds: secondsEndOfMonth } = getTimeParts(timeLeft.timerEndOfMonth);
+  const { days: daysWeekly, hours: hoursWeekly, minutes: minutesWeekly, seconds: secondsWeekly } = getTimeParts(timeLeft.timerWeekly);
+  const { days: days2024, hours: hours2024, minutes: minutes2024, seconds: seconds2024 } = getTimeParts(timeLeft.timerEndOfYear);
+
+  const currentDate = new Date();
+  const weekOfMonth = Math.ceil(currentDate.getDate() / 7); // Current week of the month
+  const currentMonth = currentDate.toLocaleString("default", { month: "long" });
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-r from-purple-600 to-pink-500 text-white">
+      <h1 className="text-5xl font-bold mb-6 drop-shadow-lg">Countdown Timers</h1>
+      <h2 className="text-2xl mb-4">Current Month: {currentMonth}</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-4xl w-full">
+        {/* 40-Day Timer */}
+        <div className="bg-blue-600 rounded-lg p-8 shadow-lg transform transition-all duration-300 hover:scale-105 relative overflow-hidden">
+          <h2 className="text-4xl font-semibold">{days40}d {hours40}h {minutes40}m {seconds40}s</h2>
+          <p className="text-sm uppercase tracking-wide">40-Day Countdown</p>
+          <p className="text-xs mt-2">Countdown to your exam! Good luck!</p>
+          <div className="absolute inset-0 bg-blue-300 opacity-30 rounded-lg blur-md"></div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        
+        {/* End of Month Timer */}
+        <div className="bg-green-600 rounded-lg p-8 shadow-lg transform transition-all duration-300 hover:scale-105 relative overflow-hidden">
+          <h2 className="text-4xl font-semibold">{daysEndOfMonth}d {hoursEndOfMonth}h {minutesEndOfMonth}m {secondsEndOfMonth}s</h2>
+          <p className="text-sm uppercase tracking-wide">Countdown to Month End: {currentMonth}</p>
+          <p className="text-xs mt-2">Finish all tasks before the month ends!</p>
+          <div className="absolute inset-0 bg-green-300 opacity-30 rounded-lg blur-md"></div>
+        </div>
+
+        {/* Weekly Timer */}
+        <div className="bg-yellow-600 rounded-lg p-8 shadow-lg transform transition-all duration-300 hover:scale-105 relative overflow-hidden">
+          <h2 className="text-4xl font-semibold">{daysWeekly}d {hoursWeekly}h {minutesWeekly}m {secondsWeekly}s</h2>
+          <p className="text-sm uppercase tracking-wide">Week {weekOfMonth} of the Month</p>
+          <p className="text-xs mt-2">Stay focused! Keep up with your weekly goals.</p>
+          <div className="absolute inset-0 bg-yellow-300 opacity-30 rounded-lg blur-md"></div>
+        </div>
+
+        {/* Year End Timer */}
+        <div className="bg-red-600 rounded-lg p-8 shadow-lg transform transition-all duration-300 hover:scale-105 relative overflow-hidden">
+          <h2 className="text-4xl font-semibold">{days2024}d {hours2024}h {minutes2024}m {seconds2024}s</h2>
+          <p className="text-sm uppercase tracking-wide">Countdown to 2024</p>
+          <p className="text-xs mt-2">Prepare for the new year!</p>
+          <div className="absolute inset-0 bg-red-300 opacity-30 rounded-lg blur-md"></div>
+        </div>
+      </div>
+
+      {timeLeft.timer40Days <= new Date() && (
+        <h3 className="text-xl mt-8 animate-pulse">40-Day Timer: Time's up! Good luck!</h3>
+      )}
+      {timeLeft.timerEndOfMonth <= new Date() && (
+        <h3 className="text-xl mt-8 animate-pulse">Month End Timer: Time's up!</h3>
+      )}
+      {timeLeft.timerWeekly <= new Date() && (
+        <h3 className="text-xl mt-8 animate-pulse">Weekly Timer: Time's up!</h3>
+      )}
+      {timeLeft.timerEndOfYear <= new Date() && (
+        <h3 className="text-xl mt-8 animate-pulse">Year End Timer: Time's up!</h3>
+      )}
+
+     
     </div>
   );
 }
