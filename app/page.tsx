@@ -9,7 +9,7 @@ const TARGET_DATE_END_OF_YEAR = new Date(new Date().getFullYear(), 11, 31, 23, 5
 const getDaysUntilEndOfWeek = () => {
   const today = new Date();
   const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
-  
+
   // Calculate days until the end of the week (Saturday)
   const daysUntilEndOfWeek = dayOfWeek === 6 ? 0 : 6 - dayOfWeek; // For Sunday start
   return new Date(today.getFullYear(), today.getMonth(), today.getDate() + daysUntilEndOfWeek, 23, 59, 59);
@@ -97,19 +97,17 @@ export default function Home() {
       </div>
 
       {timeLeft.timer40Days <= new Date() && (
-        <h3 className="text-xl mt-8 animate-pulse">40-Day Timer: Time's up! Good luck!</h3>
+        <h3 className="text-xl mt-8 animate-pulse">40-Day Timer: Time&apos;s up! Good luck!</h3>
       )}
       {timeLeft.timerEndOfMonth <= new Date() && (
-        <h3 className="text-xl mt-8 animate-pulse">Month End Timer: Time's up!</h3>
+        <h3 className="text-xl mt-8 animate-pulse">Month End Timer: Time&apos;s up!</h3>
       )}
       {timeLeft.timerWeekly <= new Date() && (
-        <h3 className="text-xl mt-8 animate-pulse">Weekly Timer: Time's up!</h3>
+        <h3 className="text-xl mt-8 animate-pulse">Weekly Timer: Time&apos;s up!</h3>
       )}
       {timeLeft.timerEndOfYear <= new Date() && (
-        <h3 className="text-xl mt-8 animate-pulse">Year End Timer: Time's up!</h3>
+        <h3 className="text-xl mt-8 animate-pulse">Year End Timer: Time&apos;s up!</h3>
       )}
-
-     
     </div>
   );
 }
