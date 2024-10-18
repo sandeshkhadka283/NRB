@@ -2,41 +2,68 @@
 
 import { useEffect, useState } from "react";
 
-const TARGET_DATE_40_DAYS = new Date(Date.now() + 40 * 24 * 60 * 60 * 1000); // 40 days from now
-const TARGET_DATE_END_OF_MONTH = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59); // End of current month
-const TARGET_DATE_END_OF_YEAR = new Date(new Date().getFullYear(), 11, 31, 23, 59, 59); // End of 2024
+const getFutureDate = (days) => new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 
 const getDaysUntilEndOfWeek = () => {
   const today = new Date();
   const dayOfWeek = today.getDay();
-  const daysUntilEndOfWeek = dayOfWeek === 6 ? 0 : 6 - dayOfWeek; // Calculate days until Saturday
+  const daysUntilEndOfWeek = dayOfWeek === 6 ? 0 : 6 - dayOfWeek; 
   return new Date(today.getFullYear(), today.getMonth(), today.getDate() + daysUntilEndOfWeek, 23, 59, 59);
 };
 
-const TARGET_DATE_WEEKLY = getDaysUntilEndOfWeek();
+const TARGET_DATE_40_DAYS_KEY = "targetDate40Days";
+const TARGET_DATE_END_OF_MONTH_KEY = "targetDateEndOfMonth";
+const TARGET_DATE_WEEKLY_KEY = "targetDateWeekly";
+const TARGET_DATE_END_OF_YEAR_KEY = "targetDateEndOfYear";
 
 export default function Home() {
-  const [timeLeft, setTimeLeft] = useState({
-    timer40Days: TARGET_DATE_40_DAYS,
-    timerEndOfMonth: TARGET_DATE_END_OF_MONTH,
-    timerWeekly: TARGET_DATE_WEEKLY,
-    timerEndOfYear: TARGET_DATE_END_OF_YEAR,
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const targetDates = {
+      timer40Days: localStorage.getItem(TARGET_DATE_40_DAYS_KEY) 
+        ? new Date(localStorage.getItem(TARGET_DATE_40_DAYS_KEY)) 
+        : getFutureDate(40),
+      timerEndOfMonth: localStorage.getItem(TARGET_DATE_END_OF_MONTH_KEY) 
+        ? new Date(localStorage.getItem(TARGET_DATE_END_OF_MONTH_KEY)) 
+        : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59),
+      timerWeekly: localStorage.getItem(TARGET_DATE_WEEKLY_KEY) 
+        ? new Date(localStorage.getItem(TARGET_DATE_WEEKLY_KEY)) 
+        : getDaysUntilEndOfWeek(),
+      timerEndOfYear: localStorage.getItem(TARGET_DATE_END_OF_YEAR_KEY) 
+        ? new Date(localStorage.getItem(TARGET_DATE_END_OF_YEAR_KEY)) 
+        : new Date(new Date().getFullYear(), 11, 31, 23, 59, 59),
+    };
+
+    // Save the target dates to localStorage
+    Object.entries(targetDates).forEach(([key, value]) => {
+      localStorage.setItem(key, value);
+    });
+
+    return targetDates;
   });
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTimeLeft((prev) => ({
-        timer40Days: new Date(prev.timer40Days.getTime() - 1000),
-        timerEndOfMonth: new Date(prev.timerEndOfMonth.getTime() - 1000),
-        timerWeekly: new Date(prev.timerWeekly.getTime() - 1000),
-        timerEndOfYear: new Date(prev.timerEndOfYear.getTime() - 1000),
-      }));
+      setTimeLeft((prev) => {
+        const updatedTimers = {
+          timer40Days: new Date(prev.timer40Days.getTime() - 1000),
+          timerEndOfMonth: new Date(prev.timerEndOfMonth.getTime() - 1000),
+          timerWeekly: new Date(prev.timerWeekly.getTime() - 1000),
+          timerEndOfYear: new Date(prev.timerEndOfYear.getTime() - 1000),
+        };
+
+        // Update localStorage with the new target dates
+        Object.entries(updatedTimers).forEach(([key, value]) => {
+          localStorage.setItem(key, value);
+        });
+
+        return updatedTimers;
+      });
     }, 1000);
 
     return () => clearInterval(interval);
   }, []);
 
-  const getTimeParts = (date: Date) => {
+  const getTimeParts = (date) => {
     const totalSeconds = Math.floor((date.getTime() - new Date().getTime()) / 1000);
     const days = Math.floor(totalSeconds / (3600 * 24));
     const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
@@ -52,7 +79,7 @@ export default function Home() {
   const { days: days2024, hours: hours2024, minutes: minutes2024, seconds: seconds2024 } = getTimeParts(timeLeft.timerEndOfYear);
 
   const currentDate = new Date();
-  const weekOfMonth = Math.ceil(currentDate.getDate() / 7); // Current week of the month
+  const weekOfMonth = Math.ceil(currentDate.getDate() / 7);
   const currentMonth = currentDate.toLocaleString("default", { month: "long" });
 
   return (
