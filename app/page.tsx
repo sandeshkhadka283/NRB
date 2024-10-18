@@ -40,13 +40,16 @@ const Home = () => {
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
 
-    return { days, hours, minutes, seconds };
+    return { days, hours, minutes, seconds, totalSeconds };
   };
 
-  const { days, hours, minutes, seconds } = getTimeParts(timeLeft);
-  const { days: days2024, hours: hours2024, minutes: minutes2024, seconds: seconds2024 } = getTimeParts(TARGET_DATE_END_OF_2024);
+  const { days, hours, minutes, seconds, totalSeconds: totalSeconds39 } = getTimeParts(timeLeft);
+  const { days: days2024, hours: hours2024, minutes: minutes2024, seconds: seconds2024, totalSeconds: totalSeconds2024 } = getTimeParts(TARGET_DATE_END_OF_2024);
 
-  const progressBarWidth = (1 - (timeLeft.getTime() / getFutureDate(39).getTime())) * 100;
+  // Calculate progress bar width
+  const progressBarWidth39 = ((39 * 24 * 60 * 60 - totalSeconds39) / (39 * 24 * 60 * 60)) * 100;
+  const totalDuration2024 = (TARGET_DATE_END_OF_2024.getTime() - new Date().getTime()) / 1000; // in seconds
+  const progressBarWidth2024 = ((totalDuration2024 - (seconds2024 + minutes2024 * 60 + hours2024 * 3600 + days2024 * 86400)) / totalDuration2024) * 100;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-r from-purple-600 to-pink-500 text-white relative overflow-hidden">
@@ -63,8 +66,8 @@ const Home = () => {
             <FaClock className="mr-4 text-5xl" />
             <h2 className="text-6xl font-semibold">{days}d {hours}h {minutes}m {seconds}s</h2>
           </div>
-          <div className="w-full bg-gray-300 rounded-full h-4 mb-6">
-            <div className="bg-yellow-500 h-full rounded-full" style={{ width: `${progressBarWidth}%` }}></div>
+          <div className="w-full bg-gray-300 rounded-full h-4 mb-6 overflow-hidden">
+            <div className="bg-gradient-to-r from-yellow-500 to-red-500 h-full transition-all duration-500" style={{ width: `${progressBarWidth39}%` }}></div>
           </div>
           <h3 className="text-lg font-semibold text-center mb-4">Countdown Breakdown</h3>
           <div className="flex justify-around text-lg">
@@ -85,7 +88,7 @@ const Home = () => {
               <span>{seconds} Seconds</span>
             </div>
           </div>
-          {timeLeft <= new Date() && <h3 className="text-xl mt-4 animate-pulse">Time's up! Good luck!</h3>}
+          {timeLeft <= new Date() && <h3 className="text-xl mt-4 animate-pulse">Time&apos;s up! Good luck!</h3>}
         </div>
 
         {/* End of 2024 Countdown */}
@@ -94,11 +97,11 @@ const Home = () => {
             <FaCalendarAlt className="mr-4 text-5xl" />
             <h2 className="text-6xl font-semibold">{days2024}d {hours2024}h {minutes2024}m {seconds2024}s</h2>
           </div>
-          <div className="w-full bg-gray-300 rounded-full h-4 mb-6">
-            <div className="bg-yellow-500 h-full rounded-full" style={{ width: `${(1 - (TARGET_DATE_END_OF_2024.getTime() / (TARGET_DATE_END_OF_2024.getTime() - new Date().getTime())) * 100)}%` }}></div>
+          <div className="w-full bg-gray-300 rounded-full h-4 mb-6 overflow-hidden">
+            <div className="bg-gradient-to-r from-yellow-500 to-red-500 h-full transition-all duration-500" style={{ width: `${progressBarWidth2024}%` }}></div>
           </div>
           <p className="text-sm uppercase tracking-wide text-center">Countdown to the End of 2024</p>
-          {TARGET_DATE_END_OF_2024 <= new Date() && <h3 className="text-xl mt-4 animate-pulse text-center">Time's up for 2024!</h3>}
+          {TARGET_DATE_END_OF_2024 <= new Date() && <h3 className="text-xl mt-4 animate-pulse text-center">Time&apos;s up for 2024!</h3>}
         </div>
       </div>
 
