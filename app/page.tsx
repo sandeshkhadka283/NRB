@@ -44,7 +44,7 @@ const Home = () => {
   };
 
   const { days, hours, minutes, seconds, totalSeconds: totalSeconds39 } = getTimeParts(timeLeft);
-  const { days: days2024, hours: hours2024, minutes: minutes2024, seconds: seconds2024, totalSeconds: totalSeconds2024 } = getTimeParts(TARGET_DATE_END_OF_2024);
+  const { days: days2024, hours: hours2024, minutes: minutes2024, seconds: seconds2024 } = getTimeParts(TARGET_DATE_END_OF_2024);
 
   // Calculate progress bar width
   const progressBarWidth39 = ((39 * 24 * 60 * 60 - totalSeconds39) / (39 * 24 * 60 * 60)) * 100;
