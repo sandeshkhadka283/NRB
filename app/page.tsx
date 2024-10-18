@@ -8,10 +8,8 @@ const TARGET_DATE_END_OF_YEAR = new Date(new Date().getFullYear(), 11, 31, 23, 5
 
 const getDaysUntilEndOfWeek = () => {
   const today = new Date();
-  const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
-
-  // Calculate days until the end of the week (Saturday)
-  const daysUntilEndOfWeek = dayOfWeek === 6 ? 0 : 6 - dayOfWeek; // For Sunday start
+  const dayOfWeek = today.getDay();
+  const daysUntilEndOfWeek = dayOfWeek === 6 ? 0 : 6 - dayOfWeek; // Calculate days until Saturday
   return new Date(today.getFullYear(), today.getMonth(), today.getDate() + daysUntilEndOfWeek, 23, 59, 59);
 };
 
@@ -28,17 +26,17 @@ export default function Home() {
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeLeft((prev) => ({
-        timer40Days: prev.timer40Days <= new Date() ? new Date() : new Date(prev.timer40Days.getTime() - 1000),
-        timerEndOfMonth: prev.timerEndOfMonth <= new Date() ? new Date() : new Date(prev.timerEndOfMonth.getTime() - 1000),
-        timerWeekly: prev.timerWeekly <= new Date() ? new Date() : new Date(prev.timerWeekly.getTime() - 1000),
-        timerEndOfYear: prev.timerEndOfYear <= new Date() ? new Date() : new Date(prev.timerEndOfYear.getTime() - 1000),
+        timer40Days: new Date(prev.timer40Days.getTime() - 1000),
+        timerEndOfMonth: new Date(prev.timerEndOfMonth.getTime() - 1000),
+        timerWeekly: new Date(prev.timerWeekly.getTime() - 1000),
+        timerEndOfYear: new Date(prev.timerEndOfYear.getTime() - 1000),
       }));
     }, 1000);
 
     return () => clearInterval(interval);
   }, []);
 
-  const getTimeParts = (date: Date) => { // Specify the type for 'date'
+  const getTimeParts = (date: Date) => {
     const totalSeconds = Math.floor((date.getTime() - new Date().getTime()) / 1000);
     const days = Math.floor(totalSeconds / (3600 * 24));
     const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
