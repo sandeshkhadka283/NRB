@@ -1,70 +1,40 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Confetti from "react-confetti";
+import { FaClock, FaCalendarAlt, FaHourglassStart, FaHourglassHalf, FaHourglassEnd } from "react-icons/fa";
 
-const getFutureDate = (days) => new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+const TARGET_DATE_39_DAYS_KEY = "targetDate39Days";
+const TARGET_DATE_END_OF_2024 = new Date(2024, 11, 31, 23, 59, 59); // End of 2024
 
-const getDaysUntilEndOfWeek = () => {
-  const today = new Date();
-  const dayOfWeek = today.getDay();
-  const daysUntilEndOfWeek = dayOfWeek === 6 ? 0 : 6 - dayOfWeek; 
-  return new Date(today.getFullYear(), today.getMonth(), today.getDate() + daysUntilEndOfWeek, 23, 59, 59);
-};
+const getFutureDate = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 
-const TARGET_DATE_40_DAYS_KEY = "targetDate40Days";
-const TARGET_DATE_END_OF_MONTH_KEY = "targetDateEndOfMonth";
-const TARGET_DATE_WEEKLY_KEY = "targetDateWeekly";
-const TARGET_DATE_END_OF_YEAR_KEY = "targetDateEndOfYear";
-
-export default function Home() {
-  const [timeLeft, setTimeLeft] = useState(() => {
-    const targetDates = {
-      timer40Days: localStorage.getItem(TARGET_DATE_40_DAYS_KEY) 
-        ? new Date(localStorage.getItem(TARGET_DATE_40_DAYS_KEY)) 
-        : getFutureDate(40),
-      timerEndOfMonth: localStorage.getItem(TARGET_DATE_END_OF_MONTH_KEY) 
-        ? new Date(localStorage.getItem(TARGET_DATE_END_OF_MONTH_KEY)) 
-        : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59),
-      timerWeekly: localStorage.getItem(TARGET_DATE_WEEKLY_KEY) 
-        ? new Date(localStorage.getItem(TARGET_DATE_WEEKLY_KEY)) 
-        : getDaysUntilEndOfWeek(),
-      timerEndOfYear: localStorage.getItem(TARGET_DATE_END_OF_YEAR_KEY) 
-        ? new Date(localStorage.getItem(TARGET_DATE_END_OF_YEAR_KEY)) 
-        : new Date(new Date().getFullYear(), 11, 31, 23, 59, 59),
-    };
-
-    // Save the target dates to localStorage
-    Object.entries(targetDates).forEach(([key, value]) => {
-      localStorage.setItem(key, value);
-    });
-
-    return targetDates;
-  });
+const Home = () => {
+  const [timeLeft, setTimeLeft] = useState(new Date(getFutureDate(39)));
+  const [confetti, setConfetti] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        const updatedTimers = {
-          timer40Days: new Date(prev.timer40Days.getTime() - 1000),
-          timerEndOfMonth: new Date(prev.timerEndOfMonth.getTime() - 1000),
-          timerWeekly: new Date(prev.timerWeekly.getTime() - 1000),
-          timerEndOfYear: new Date(prev.timerEndOfYear.getTime() - 1000),
-        };
+    if (typeof window !== "undefined") {
+      const storedDate = localStorage.getItem(TARGET_DATE_39_DAYS_KEY);
+      const initialDate = storedDate ? new Date(storedDate) : getFutureDate(39);
+      setTimeLeft(initialDate);
+      
+      localStorage.setItem(TARGET_DATE_39_DAYS_KEY, initialDate.toString());
 
-        // Update localStorage with the new target dates
-        Object.entries(updatedTimers).forEach(([key, value]) => {
-          localStorage.setItem(key, value);
+      const interval = setInterval(() => {
+        setTimeLeft((prev) => {
+          const updatedDate = new Date(prev.getTime() - 1000);
+          localStorage.setItem(TARGET_DATE_39_DAYS_KEY, updatedDate.toString());
+          return updatedDate;
         });
+      }, 1000);
 
-        return updatedTimers;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
+      return () => clearInterval(interval);
+    }
   }, []);
 
-  const getTimeParts = (date) => {
-    const totalSeconds = Math.floor((date.getTime() - new Date().getTime()) / 1000);
+  const getTimeParts = (date: Date) => {
+    const totalSeconds = Math.max(Math.floor((date.getTime() - new Date().getTime()) / 1000), 0);
     const days = Math.floor(totalSeconds / (3600 * 24));
     const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -73,66 +43,72 @@ export default function Home() {
     return { days, hours, minutes, seconds };
   };
 
-  const { days: days40, hours: hours40, minutes: minutes40, seconds: seconds40 } = getTimeParts(timeLeft.timer40Days);
-  const { days: daysEndOfMonth, hours: hoursEndOfMonth, minutes: minutesEndOfMonth, seconds: secondsEndOfMonth } = getTimeParts(timeLeft.timerEndOfMonth);
-  const { days: daysWeekly, hours: hoursWeekly, minutes: minutesWeekly, seconds: secondsWeekly } = getTimeParts(timeLeft.timerWeekly);
-  const { days: days2024, hours: hours2024, minutes: minutes2024, seconds: seconds2024 } = getTimeParts(timeLeft.timerEndOfYear);
+  const { days, hours, minutes, seconds } = getTimeParts(timeLeft);
+  const { days: days2024, hours: hours2024, minutes: minutes2024, seconds: seconds2024 } = getTimeParts(TARGET_DATE_END_OF_2024);
 
-  const currentDate = new Date();
-  const weekOfMonth = Math.ceil(currentDate.getDate() / 7);
-  const currentMonth = currentDate.toLocaleString("default", { month: "long" });
+  const progressBarWidth = (1 - (timeLeft.getTime() / getFutureDate(39).getTime())) * 100;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-r from-purple-600 to-pink-500 text-white">
-      <h1 className="text-5xl font-bold mb-6 drop-shadow-lg">Countdown Timers</h1>
-      <h2 className="text-2xl mb-4">Current Month: {currentMonth}</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-4xl w-full">
-        {/* 40-Day Timer */}
-        <div className="bg-blue-600 rounded-lg p-8 shadow-lg transform transition-all duration-300 hover:scale-105 relative overflow-hidden">
-          <h2 className="text-4xl font-semibold">{days40}d {hours40}h {minutes40}m {seconds40}s</h2>
-          <p className="text-sm uppercase tracking-wide">40-Day Countdown</p>
-          <p className="text-xs mt-2">Countdown to your exam! Good luck!</p>
-          <div className="absolute inset-0 bg-blue-300 opacity-30 rounded-lg blur-md"></div>
-        </div>
-        
-        {/* End of Month Timer */}
-        <div className="bg-green-600 rounded-lg p-8 shadow-lg transform transition-all duration-300 hover:scale-105 relative overflow-hidden">
-          <h2 className="text-4xl font-semibold">{daysEndOfMonth}d {hoursEndOfMonth}h {minutesEndOfMonth}m {secondsEndOfMonth}s</h2>
-          <p className="text-sm uppercase tracking-wide">Countdown to Month End: {currentMonth}</p>
-          <p className="text-xs mt-2">Finish all tasks before the month ends!</p>
-          <div className="absolute inset-0 bg-green-300 opacity-30 rounded-lg blur-md"></div>
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-r from-purple-600 to-pink-500 text-white relative overflow-hidden">
+      {confetti && <Confetti width={window.innerWidth} height={window.innerHeight} />}
+      <h1 className="text-5xl font-bold mb-8 drop-shadow-lg">Countdown Timers</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
+        {/* 39-Day Countdown */}
+        <div
+          className="bg-blue-900 rounded-lg p-10 shadow-2xl cursor-pointer transition-transform duration-300 hover:shadow-lg transform hover:scale-105"
+          onClick={() => setConfetti(true)}
+        >
+          <div className="flex items-center mb-6">
+            <FaClock className="mr-4 text-5xl" />
+            <h2 className="text-6xl font-semibold">{days}d {hours}h {minutes}m {seconds}s</h2>
+          </div>
+          <div className="w-full bg-gray-300 rounded-full h-4 mb-6">
+            <div className="bg-yellow-500 h-full rounded-full" style={{ width: `${progressBarWidth}%` }}></div>
+          </div>
+          <h3 className="text-lg font-semibold text-center mb-4">Countdown Breakdown</h3>
+          <div className="flex justify-around text-lg">
+            <div className="flex flex-col items-center">
+              <FaHourglassStart className="text-4xl mb-1" />
+              <span>{days} Days</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <FaHourglassHalf className="text-4xl mb-1" />
+              <span>{hours} Hours</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <FaHourglassEnd className="text-4xl mb-1" />
+              <span>{minutes} Minutes</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <FaClock className="text-4xl mb-1" />
+              <span>{seconds} Seconds</span>
+            </div>
+          </div>
+          {timeLeft <= new Date() && <h3 className="text-xl mt-4 animate-pulse">Time's up! Good luck!</h3>}
         </div>
 
-        {/* Weekly Timer */}
-        <div className="bg-yellow-600 rounded-lg p-8 shadow-lg transform transition-all duration-300 hover:scale-105 relative overflow-hidden">
-          <h2 className="text-4xl font-semibold">{daysWeekly}d {hoursWeekly}h {minutesWeekly}m {secondsWeekly}s</h2>
-          <p className="text-sm uppercase tracking-wide">Week {weekOfMonth} of the Month</p>
-          <p className="text-xs mt-2">Stay focused! Keep up with your weekly goals.</p>
-          <div className="absolute inset-0 bg-yellow-300 opacity-30 rounded-lg blur-md"></div>
-        </div>
-
-        {/* Year End Timer */}
-        <div className="bg-red-600 rounded-lg p-8 shadow-lg transform transition-all duration-300 hover:scale-105 relative overflow-hidden">
-          <h2 className="text-4xl font-semibold">{days2024}d {hours2024}h {minutes2024}m {seconds2024}s</h2>
-          <p className="text-sm uppercase tracking-wide">Countdown to 2024</p>
-          <p className="text-xs mt-2">Prepare for the new year!</p>
-          <div className="absolute inset-0 bg-red-300 opacity-30 rounded-lg blur-md"></div>
+        {/* End of 2024 Countdown */}
+        <div className="bg-green-900 rounded-lg p-10 shadow-2xl">
+          <div className="flex items-center mb-6">
+            <FaCalendarAlt className="mr-4 text-5xl" />
+            <h2 className="text-6xl font-semibold">{days2024}d {hours2024}h {minutes2024}m {seconds2024}s</h2>
+          </div>
+          <div className="w-full bg-gray-300 rounded-full h-4 mb-6">
+            <div className="bg-yellow-500 h-full rounded-full" style={{ width: `${(1 - (TARGET_DATE_END_OF_2024.getTime() / (TARGET_DATE_END_OF_2024.getTime() - new Date().getTime())) * 100)}%` }}></div>
+          </div>
+          <p className="text-sm uppercase tracking-wide text-center">Countdown to the End of 2024</p>
+          {TARGET_DATE_END_OF_2024 <= new Date() && <h3 className="text-xl mt-4 animate-pulse text-center">Time's up for 2024!</h3>}
         </div>
       </div>
 
-      {timeLeft.timer40Days <= new Date() && (
-        <h3 className="text-xl mt-8 animate-pulse">40-Day Timer: Time&apos;s up! Good luck!</h3>
-      )}
-      {timeLeft.timerEndOfMonth <= new Date() && (
-        <h3 className="text-xl mt-8 animate-pulse">Month End Timer: Time&apos;s up!</h3>
-      )}
-      {timeLeft.timerWeekly <= new Date() && (
-        <h3 className="text-xl mt-8 animate-pulse">Weekly Timer: Time&apos;s up!</h3>
-      )}
-      {timeLeft.timerEndOfYear <= new Date() && (
-        <h3 className="text-xl mt-8 animate-pulse">Year End Timer: Time&apos;s up!</h3>
-      )}
+      <style jsx>{`
+        .min-h-screen {
+          background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 20%, rgba(0, 0, 0, 0.1) 80%);
+        }
+      `}</style>
     </div>
   );
-}
+};
+
+export default Home;
