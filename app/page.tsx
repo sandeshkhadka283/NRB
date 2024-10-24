@@ -9,7 +9,7 @@ const TARGET_DATE_END_OF_2024 = new Date(2024, 11, 31, 23, 59, 59); // End of 20
 const TARGET_DATE_CU_APPLICATION = new Date(2024, 11, 15, 23, 59, 59); // CU Application Date
 const TARGET_DATE_CU_BOLDER_START = new Date(2024, 7, 1); // Start date for CU Boulder (August 1, 2024)
 
-const getFutureDate = (days) => new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+const getFutureDate = (days: number): Date => new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 
 const Home = () => {
   const [timeLeft, setTimeLeft] = useState(new Date(getFutureDate(39)));
@@ -35,7 +35,7 @@ const Home = () => {
     }
   }, []);
 
-  const getTimeParts = (date) => {
+  const getTimeParts = (date: Date) => {
     const totalSecondsLeft = Math.max(Math.floor((date.getTime() - new Date().getTime()) / 1000), 0);
     const days = Math.floor(totalSecondsLeft / (3600 * 24));
     const hours = Math.floor((totalSecondsLeft % (3600 * 24)) / 3600);
@@ -81,7 +81,7 @@ const Home = () => {
           <div className="w-full bg-gray-300 rounded-full h-4 mb-6 overflow-hidden">
             <div className="bg-gradient-to-r from-yellow-500 to-red-500 h-full transition-all duration-500" style={{ width: `${progressBarWidth39}%` }}></div>
           </div>
-          <h3 className="text-lg font-semibold text-center mb-4">Exam Timeline :  </h3>
+          <h3 className="text-lg font-semibold text-center mb-4">Exam Timeline:</h3>
 
           <div className="flex justify-around text-lg">
             <div className="flex flex-col items-center">
@@ -113,7 +113,7 @@ const Home = () => {
           <div className="w-full bg-gray-300 rounded-full h-4 mb-6 overflow-hidden">
             <div className="bg-gradient-to-r from-yellow-500 to-red-500 h-full transition-all duration-500" style={{ width: `${progressBarWidth2024}%` }}></div>
           </div>
-          <h3 className="text-lg font-semibold text-center mb-4">Year 2024 : Way </h3>
+          <h3 className="text-lg font-semibold text-center mb-4">Year 2024 Countdown:</h3>
           <div className="flex justify-around text-lg">
             <div className="flex flex-col items-center">
               <FaHourglassStart className="text-4xl mb-1" />
@@ -144,7 +144,7 @@ const Home = () => {
           <div className="w-full bg-gray-300 rounded-full h-4 mb-6 overflow-hidden">
             <div className="bg-gradient-to-r from-yellow-500 to-red-500 h-full transition-all duration-500" style={{ width: `${progressBarWidthBoulder}%` }}></div>
           </div>
-          <h3 className="text-lg font-semibold text-center mb-4">CU Boulder Application Submission Date : </h3>
+          <h3 className="text-lg font-semibold text-center mb-4">CU Boulder Application Submission Date:</h3>
           <div className="flex justify-around text-lg">
             <div className="flex flex-col items-center">
               <FaHourglassStart className="text-4xl mb-1" />
