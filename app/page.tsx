@@ -51,7 +51,6 @@ const Home = () => {
   
   // CU Boulder countdown
   const totalDurationBoulder = (TARGET_DATE_CU_APPLICATION.getTime() - TARGET_DATE_CU_BOLDER_START.getTime()) / 1000; // in seconds
-  const totalSecondsBoulder = Math.floor(totalDurationBoulder); // Total seconds for CU Boulder countdown
   const progressBarWidthBoulder = totalDurationBoulder > 0
     ? ((totalDurationBoulder - (secondsCU + minutesCU * 60 + hoursCU * 3600 + daysCU * 86400)) / totalDurationBoulder) * 100
     : 0;
