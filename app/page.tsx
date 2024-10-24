@@ -6,6 +6,7 @@ import { FaClock, FaCalendarAlt, FaHourglassStart, FaHourglassHalf, FaHourglassE
 
 const TARGET_DATE_39_DAYS_KEY = "targetDate39Days";
 const TARGET_DATE_END_OF_2024 = new Date(2024, 11, 31, 23, 59, 59); // End of 2024
+const TARGET_DATE_CU_APPLICATION = new Date(2024, 11, 15, 23, 59, 59); // CU Application Date
 
 const getFutureDate = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 
@@ -45,11 +46,15 @@ const Home = () => {
 
   const { days, hours, minutes, seconds, totalSeconds: totalSeconds39 } = getTimeParts(timeLeft);
   const { days: days2024, hours: hours2024, minutes: minutes2024, seconds: seconds2024 } = getTimeParts(TARGET_DATE_END_OF_2024);
+  const { days: daysCU, hours: hoursCU, minutes: minutesCU, seconds: secondsCU } = getTimeParts(TARGET_DATE_CU_APPLICATION);
 
   // Calculate progress bar width
   const progressBarWidth39 = ((39 * 24 * 60 * 60 - totalSeconds39) / (39 * 24 * 60 * 60)) * 100;
   const totalDuration2024 = (TARGET_DATE_END_OF_2024.getTime() - new Date().getTime()) / 1000; // in seconds
   const progressBarWidth2024 = ((totalDuration2024 - (seconds2024 + minutes2024 * 60 + hours2024 * 3600 + days2024 * 86400)) / totalDuration2024) * 100;
+  
+  const totalDurationCU = (TARGET_DATE_CU_APPLICATION.getTime() - new Date().getTime()) / 1000; // in seconds
+  const progressBarWidthCU = ((totalDurationCU - (secondsCU + minutesCU * 60 + hoursCU * 3600 + daysCU * 86400)) / totalDurationCU) * 100;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-r from-purple-600 to-pink-500 text-white relative overflow-hidden">
@@ -102,6 +107,19 @@ const Home = () => {
           </div>
           <p className="text-sm uppercase tracking-wide text-center">Countdown to the End of 2024</p>
           {TARGET_DATE_END_OF_2024 <= new Date() && <h3 className="text-xl mt-4 animate-pulse text-center">Time&apos;s up for 2024!</h3>}
+        </div>
+
+        {/* CU Application Date Countdown */}
+        <div className="bg-red-900 rounded-lg p-10 shadow-2xl">
+          <div className="flex items-center mb-6">
+            <FaCalendarAlt className="mr-4 text-5xl" />
+            <h2 className="text-6xl font-semibold">{daysCU}d {hoursCU}h {minutesCU}m {secondsCU}s</h2>
+          </div>
+          <div className="w-full bg-gray-300 rounded-full h-4 mb-6 overflow-hidden">
+            <div className="bg-gradient-to-r from-yellow-500 to-red-500 h-full transition-all duration-500" style={{ width: `${progressBarWidthCU}%` }}></div>
+          </div>
+          <p className="text-sm uppercase tracking-wide text-center">CU Application Date</p>
+          {TARGET_DATE_CU_APPLICATION <= new Date() && <h3 className="text-xl mt-4 animate-pulse text-center">Application Date has passed!</h3>}
         </div>
       </div>
 
