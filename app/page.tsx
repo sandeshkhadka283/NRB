@@ -7,8 +7,9 @@ import { FaClock, FaCalendarAlt, FaHourglassStart, FaHourglassHalf, FaHourglassE
 const TARGET_DATE_39_DAYS_KEY = "targetDate39Days";
 const TARGET_DATE_END_OF_2024 = new Date(2024, 11, 31, 23, 59, 59); // End of 2024
 const TARGET_DATE_CU_APPLICATION = new Date(2024, 11, 15, 23, 59, 59); // CU Application Date
+const TARGET_DATE_CU_BOLDER_START = new Date(2024, 7, 1); // Start date for CU Boulder (August 1, 2024)
 
-const getFutureDate = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+const getFutureDate = (days) => new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 
 const Home = () => {
   const [timeLeft, setTimeLeft] = useState(new Date(getFutureDate(39)));
@@ -34,27 +35,34 @@ const Home = () => {
     }
   }, []);
 
-  const getTimeParts = (date: Date) => {
-    const totalSeconds = Math.max(Math.floor((date.getTime() - new Date().getTime()) / 1000), 0);
-    const days = Math.floor(totalSeconds / (3600 * 24));
-    const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+  const getTimeParts = (date) => {
+    const totalSecondsLeft = Math.max(Math.floor((date.getTime() - new Date().getTime()) / 1000), 0);
+    const days = Math.floor(totalSecondsLeft / (3600 * 24));
+    const hours = Math.floor((totalSecondsLeft % (3600 * 24)) / 3600);
+    const minutes = Math.floor((totalSecondsLeft % 3600) / 60);
+    const seconds = totalSecondsLeft % 60;
 
-    return { days, hours, minutes, seconds, totalSeconds };
+    return { days, hours, minutes, seconds, totalSecondsLeft };
   };
 
-  const { days, hours, minutes, seconds, totalSeconds: totalSeconds39 } = getTimeParts(timeLeft);
+  const { days, hours, minutes, seconds, totalSecondsLeft } = getTimeParts(timeLeft);
   const { days: days2024, hours: hours2024, minutes: minutes2024, seconds: seconds2024 } = getTimeParts(TARGET_DATE_END_OF_2024);
   const { days: daysCU, hours: hoursCU, minutes: minutesCU, seconds: secondsCU } = getTimeParts(TARGET_DATE_CU_APPLICATION);
-
-  // Calculate progress bar width
-  const progressBarWidth39 = ((39 * 24 * 60 * 60 - totalSeconds39) / (39 * 24 * 60 * 60)) * 100;
-  const totalDuration2024 = (TARGET_DATE_END_OF_2024.getTime() - new Date().getTime()) / 1000; // in seconds
-  const progressBarWidth2024 = ((totalDuration2024 - (seconds2024 + minutes2024 * 60 + hours2024 * 3600 + days2024 * 86400)) / totalDuration2024) * 100;
   
-  const totalDurationCU = (TARGET_DATE_CU_APPLICATION.getTime() - new Date().getTime()) / 1000; // in seconds
-  const progressBarWidthCU = ((totalDurationCU - (secondsCU + minutesCU * 60 + hoursCU * 3600 + daysCU * 86400)) / totalDurationCU) * 100;
+  // CU Boulder countdown
+  const totalDurationBoulder = (TARGET_DATE_CU_APPLICATION.getTime() - TARGET_DATE_CU_BOLDER_START.getTime()) / 1000; // in seconds
+  const totalSecondsBoulder = Math.floor(totalDurationBoulder); // Total seconds for CU Boulder countdown
+  const progressBarWidthBoulder = totalDurationBoulder > 0
+    ? ((totalDurationBoulder - (secondsCU + minutesCU * 60 + hoursCU * 3600 + daysCU * 86400)) / totalDurationBoulder) * 100
+    : 0;
+
+  const totalSecondsFor39Days = 39 * 24 * 60 * 60; // Total seconds for 39 days
+  const progressBarWidth39 = ((totalSecondsFor39Days - totalSecondsLeft) / totalSecondsFor39Days) * 100;
+
+  const totalDuration2024 = (TARGET_DATE_END_OF_2024.getTime() - new Date().getTime()) / 1000; // in seconds
+  const progressBarWidth2024 = totalDuration2024 > 0
+    ? ((365 * 24 * 60 * 60 - totalDuration2024) / (365 * 24 * 60 * 60)) * 100
+    : 0;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-r from-purple-600 to-pink-500 text-white relative overflow-hidden">
@@ -74,7 +82,8 @@ const Home = () => {
           <div className="w-full bg-gray-300 rounded-full h-4 mb-6 overflow-hidden">
             <div className="bg-gradient-to-r from-yellow-500 to-red-500 h-full transition-all duration-500" style={{ width: `${progressBarWidth39}%` }}></div>
           </div>
-          <h3 className="text-lg font-semibold text-center mb-4">Countdown Breakdown</h3>
+          <h3 className="text-lg font-semibold text-center mb-4">Exam Timeline :  </h3>
+
           <div className="flex justify-around text-lg">
             <div className="flex flex-col items-center">
               <FaHourglassStart className="text-4xl mb-1" />
@@ -105,20 +114,56 @@ const Home = () => {
           <div className="w-full bg-gray-300 rounded-full h-4 mb-6 overflow-hidden">
             <div className="bg-gradient-to-r from-yellow-500 to-red-500 h-full transition-all duration-500" style={{ width: `${progressBarWidth2024}%` }}></div>
           </div>
-          <p className="text-sm uppercase tracking-wide text-center">Countdown to the End of 2024</p>
+          <h3 className="text-lg font-semibold text-center mb-4">Year 2024 : Way </h3>
+          <div className="flex justify-around text-lg">
+            <div className="flex flex-col items-center">
+              <FaHourglassStart className="text-4xl mb-1" />
+              <span>{days2024} Days</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <FaHourglassHalf className="text-4xl mb-1" />
+              <span>{hours2024} Hours</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <FaHourglassEnd className="text-4xl mb-1" />
+              <span>{minutes2024} Minutes</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <FaClock className="text-4xl mb-1" />
+              <span>{seconds2024} Seconds</span>
+            </div>
+          </div>
           {TARGET_DATE_END_OF_2024 <= new Date() && <h3 className="text-xl mt-4 animate-pulse text-center">Time&apos;s up for 2024!</h3>}
         </div>
 
-        {/* CU Application Date Countdown */}
+        {/* CU Boulder Countdown */}
         <div className="bg-red-900 rounded-lg p-10 shadow-2xl">
           <div className="flex items-center mb-6">
             <FaCalendarAlt className="mr-4 text-5xl" />
             <h2 className="text-6xl font-semibold">{daysCU}d {hoursCU}h {minutesCU}m {secondsCU}s</h2>
           </div>
           <div className="w-full bg-gray-300 rounded-full h-4 mb-6 overflow-hidden">
-            <div className="bg-gradient-to-r from-yellow-500 to-red-500 h-full transition-all duration-500" style={{ width: `${progressBarWidthCU}%` }}></div>
+            <div className="bg-gradient-to-r from-yellow-500 to-red-500 h-full transition-all duration-500" style={{ width: `${progressBarWidthBoulder}%` }}></div>
           </div>
-          <p className="text-sm uppercase tracking-wide text-center">CU Application Date</p>
+          <h3 className="text-lg font-semibold text-center mb-4">CU Boulder Application Submission Date : </h3>
+          <div className="flex justify-around text-lg">
+            <div className="flex flex-col items-center">
+              <FaHourglassStart className="text-4xl mb-1" />
+              <span>{daysCU} Days</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <FaHourglassHalf className="text-4xl mb-1" />
+              <span>{hoursCU} Hours</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <FaHourglassEnd className="text-4xl mb-1" />
+              <span>{minutesCU} Minutes</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <FaClock className="text-4xl mb-1" />
+              <span>{secondsCU} Seconds</span>
+            </div>
+          </div>
           {TARGET_DATE_CU_APPLICATION <= new Date() && <h3 className="text-xl mt-4 animate-pulse text-center">Application Date has passed!</h3>}
         </div>
       </div>
